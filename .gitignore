@@ -1,3 +1,13 @@
+# Data folder
+Data/*
+
+# LaTex files
+Report/*.gz
+Report/*.out
+Report/*.log
+Report/*.aux
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
