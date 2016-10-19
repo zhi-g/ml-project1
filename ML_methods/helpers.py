@@ -14,6 +14,19 @@ def standardize(x, mean_x=None, std_x=None):
     tx = np.hstack((np.ones((x.shape[0],1)), x))
     return tx, mean_x, std_x
 
+def standardize_filtered(tx):
+    """Standardize the original data set with -999 values set to zero."""
+    N = np.shape(tx)[1];
+    for i in range(N): 
+        f = tx[:,i] == -999
+        d = tx[:,i] != -999
+        temp = tx[d, i]
+        mean = np.mean(temp)
+        std = np.std(temp)
+        tx[d,i] = [(x - mean) / std for x in tx[d,i]] 
+        tx[f,i] = [0 for _ in tx[f,i]]
+
+    return tx
 
 def batch_iter(y, tx, batch_size, num_batches=None, shuffle=True):
     """
@@ -44,3 +57,4 @@ def batch_iter(y, tx, batch_size, num_batches=None, shuffle=True):
         end_index = min((batch_num + 1) * batch_size, data_size)
         if start_index != end_index:
             yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
+

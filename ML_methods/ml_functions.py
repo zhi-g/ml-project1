@@ -120,4 +120,24 @@ def ridge_regression(y, tx, lamb):
     #Solve again to compute matrix inverses
     a = np.linalg.solve(x_inv + id_mult, np.dot(tx.T, y))
     
-    return a
+    return a    
+
+
+def sigma(x):
+    """Implement sigmoid function for ridge regression."""
+    return 1 / ( 1 + np.exp(-x))
+
+
+def logistic_regression(y, tx, gamma, max_iters):
+    "Implement ridge regression with gradient descent."
+    N = np.shape(tx)[0]
+    if tx.ndim == 1:
+        tx = tx.reshape((N,1))
+    M = tx.shape[1]
+    w = np.zeros(M)
+    for i in range(max_iters):
+        gradient = (-1/N) * tx.T.dot(y - sigma(tx.dot(w)))
+        w = w - gamma*gradient
+
+    return w
+
