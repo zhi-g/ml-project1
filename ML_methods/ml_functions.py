@@ -76,6 +76,18 @@ def build_poly(x, degree):
     phi = phi.reshape([x.shape[0], degree+1])
     return phi
 
+def build_poly2(x, degree):
+    """polynomial basis functions for input data x, for j=0 up to j=degree."""
+    size = (x.shape[0])*(degree+1)
+    phi = np.full((1, size), 0.0)
+    
+    for i in range(0, x.shape[0]):
+        for j in range(0, degree+1):
+            index = j + i*(degree+1)
+            np.put(phi, index, np.power(x[i], j))
+
+    return phi
+
 #return both sets as two different variable: train_data, test_data
 def split_data(x, y, ratio, seed=1):
     """split the dataset based on the split ratio."""
