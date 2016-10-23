@@ -2,7 +2,7 @@
 """a function used to compute the loss."""
 
 import numpy as np
-from costs import compute_loss
+from costs import *
 
 def compute_gradient(y, tx, w):
     """Compute the gradient."""
@@ -124,8 +124,8 @@ def ridge_regression(y, tx, lamb):
 
 
 def sigma(x):
-    """Implement sigmoid function for ridge regression."""
-    return 1 / ( 1 + np.exp(-x))
+    """Implement sigmoid function for logistic regression."""
+    return 1. / ( 1 + np.exp(-x))
 
 
 def logistic_regression(y, tx, gamma, max_iters):
@@ -140,4 +140,29 @@ def logistic_regression(y, tx, gamma, max_iters):
         w = w - gamma*gradient
 
     return w
+
+def reg_logistic_regression(y, tx, lamb, gamma, max_iters):
+    """Implement regularized logistic regression."""
+
+    data_size = len(y)
+    data_dim = np.shape(tx)[1]
+
+    w = np.zeros(data_dim)
+    w_star = w
+    min_err = -1
+
+    for i in range(max_iters):
+        wPrim = w
+        w[0] = 0
+
+        err = compute_cost_ll(y, tx, w) + lamb * np.dot(w.T, w)
+        grad = np.dot(-tx.T, y - sigma(np.dot(tx, w))) / data_size
+
+        w = w - gamma * grad
+        if (err < min_err or min_err == -1):
+            min_err = err
+            w_star = w
+
+    return w_star[1:]
+
 
