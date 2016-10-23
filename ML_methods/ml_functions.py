@@ -135,11 +135,75 @@ def ridge_regression(y, tx, lamb):
     return a    
 
 
-def sigma(x):
+def calculate_loss_negative_log_likelihood(y, tx, w):
+    """compute the cost by negative log likelihood."""
+    summ = 0
+    for i in range(1,tx.shape[0]):
+        ln = np.log(1 + np.exp(tx[i].T.dot(w)))
+        diff = y[i] * tx[i].T.dot(w)
+        summ = summ + (ln - diff)
+    return summ
+
+def sigmoid(x):
     """Implement sigmoid function for ridge regression."""
-    return 1 / ( 1 + np.exp(-x))
+    
+    et = np.exp(x)
+    return  et / (1 + et)
+    #return 1 / ( 1 + np.exp(-x))
+
+def calculate_gradient_logistic(y, tx, w):
+    """compute the gradient of loss."""
+    ripMemory = tx.dot(w)
+    sigmo = sigmoid((ripMemory - y))
+    return tx.T.dot(sigmo)
+
+def logistic_regression_test(y, tx, gamma, max_iter):
+    # init parameters
+    threshold = 1e-8
+
+    w = np.zeros((tx.shape[1], 1))
+
+    # start the logistic regression
+    for iter in range(max_iter):
+        w = learning_by_newton_method(y, tx, w, gamma)
+        print(iter)
+        # converge criteria
+        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
+            break
+            
+def calculate_hessian(y, tx, w):
+    """return the hessian of the loss function."""
+    N = tx.shape[0]
+    S = np.full((N,N), 0)
+    
+    for i in range(0, N):
+        S1 = sigmoid(tx[i].T.dot(w))
+        S2 = 1 - sigmoid(tx[i].T.dot(w))
+        S[i,i] = S1 * S2
+
+    H1 = tx.T.dot(S)
+    return H1.dot(tx)
+
+def logistic_regression_hessian(y, tx, w):
+    """return the loss, gradient, and hessian."""
+    # ***************************************************
+    # INSERT YOUR CODE HERE
+    # return loss, gradient, and hessian: TODO
+    # ***************************************************
+    return calculate_gradient_logistic(y, tx, w), calculate_hessian(y, tx, w)
 
 
+def learning_by_newton_method(y, tx, w, gamma):
+    """
+    Do one step on Newton's method.
+    return the loss and updated w.
+    """
+    grad, hessian = logistic_regression_hessian(y, tx, w)
+    #TODO use np.solve
+    return w - gamma*(np.linalg.inv(hessian)).dot(grad)
+
+
+            
 def logistic_regression(y, tx, gamma, max_iters):
     "Implement ridge regression with gradient descent."
     N = np.shape(tx)[0]
@@ -148,7 +212,7 @@ def logistic_regression(y, tx, gamma, max_iters):
     M = tx.shape[1]
     w = np.zeros(M)
     for i in range(max_iters):
-        gradient = (-1/N) * tx.T.dot(y - sigma(tx.dot(w)))
+        gradient = (-1/N) * tx.T.dot(y - sigmoid(tx.dot(w)))
         w = w - gamma*gradient
 
     return w
