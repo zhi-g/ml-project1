@@ -12,10 +12,14 @@ def compute_gradient(y, tx, w):
 
 # TODO check if we have to comply with the project description methods which would mean we have to
 # get rid of the initial_w param
-def least_squares_GD(y, tx, initial_w, gamma, max_iters): 
+def least_squares_GD(y, tx, gamma, max_iters, initial_w=None): 
     """Gradient descent algorithm."""
     # Define parameters to store w and loss
-    ws = [initial_w]
+    if initial_w == None:
+        ws = np.zeros(np.zeros(30))
+    else:
+        ws = [initial_w]
+    
     losses = []
     w = initial_w
     for n_iter in range(max_iters):
@@ -120,12 +124,13 @@ def ridge_regression(y, tx, lamb):
     #Solve again to compute matrix inverses
     a = np.linalg.solve(x_inv + id_mult, np.dot(tx.T, y))
     
-    return a    
+    return 0, a    
 
 
 def sigma(x):
     """Implement sigmoid function for logistic regression."""
-    return 1. / ( 1 + np.exp(-x))
+    z = np.exp(x)
+    return  z / (1 + z)
 
 
 def logistic_regression(y, tx, gamma, max_iters):
@@ -139,15 +144,13 @@ def logistic_regression(y, tx, gamma, max_iters):
         gradient = (-1/N) * tx.T.dot(y - sigma(tx.dot(w)))
         w = w - gamma*gradient
 
-    return w
+    return w[1:]
 
 def reg_logistic_regression(y, tx, lamb, gamma, max_iters):
     """Implement regularized logistic regression."""
-
     data_size = len(y)
-    data_dim = np.shape(tx)[1]
 
-    w = np.zeros(data_dim)
+    w = np.zeros(np.shape(tx)[1])
     w_star = w
     min_err = -1
 
@@ -163,6 +166,6 @@ def reg_logistic_regression(y, tx, lamb, gamma, max_iters):
             min_err = err
             w_star = w
 
-    return w_star[1:]
+    return err, w_star
 
 
