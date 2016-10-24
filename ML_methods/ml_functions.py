@@ -12,7 +12,7 @@ def compute_gradient(y, tx, w):
 
 # TODO check if we have to comply with the project description methods which would mean we have to
 # get rid of the initial_w param
-def least_squares_GD(y, tx, gamma, max_iters, initial_w=None): 
+def least_squares_GD(y, tx, initial_w, gamma, max_iters): 
     """Gradient descent algorithm."""
     # Define parameters to store w and loss
     if initial_w == None:
@@ -124,7 +124,7 @@ def ridge_regression(y, tx, lamb):
     #Solve again to compute matrix inverses
     a = np.linalg.solve(x_inv + id_mult, np.dot(tx.T, y))
     
-    return 0, a    
+    return a    
 
 
 def sigma(x):
