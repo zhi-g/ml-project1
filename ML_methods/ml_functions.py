@@ -22,7 +22,7 @@ def least_squares_GD(y, tx, initial_w, gamma, max_iters):
         
         loss = compute_loss(y, tx, w)
         
-        w = w - gamma*compute_gradient(y, tx, w)
+        w = w - gamma * compute_gradient(y, tx, w)
 
         ws.append(np.copy(w))
         losses.append(loss)
@@ -81,7 +81,7 @@ def build_poly2(x, degree):
     size = (x.shape[0])*(degree+1)
     phi = np.full((1, size), 0.0)
     
-    for i in range(0, x.shape[0]):
+    for i in range(1, x.shape[0]):
         for j in range(0, degree+1):
             index = j + i*(degree+1)
             np.put(phi, index, np.power(x[i], j))
@@ -147,14 +147,39 @@ def calculate_loss_negative_log_likelihood(y, tx, w):
 def sigmoid(x):
     """Implement sigmoid function for ridge regression."""
     
-    et = np.exp(x)
-    return  et / (1 + et)
-    #return 1 / ( 1 + np.exp(-x))
+    elem = list()
+    for i in range(0, x.shape[0]):
+        for j in range(0, x.shape[1]):
+            if x[i,j] >= 15:
+                elem.append(1)
+            elif x[i,j] < -15:
+                elem.append(0)
+            else:
+                elem.append(1 / ( 1 + np.exp(x[i,j])))
+    array = np.array(elem).reshape((x.shape[0], x.shape[1]))
+    return array
+
+def sigmoid2(x):
+    """Implement sigmoid function for ridge regression."""
+    
+    elem = list()
+    for i in range(0, x.shape[0]):
+        if x[i] >= 15:
+            elem.append(1)
+        elif x[i] < -15:
+            elem.append(0)
+        else:
+            elem.append(1 / ( 1 + np.exp(x[i])))
+            
+    array = np.array(elem).reshape((x.shape[0], ))
+    return array
+
 
 def calculate_gradient_logistic(y, tx, w):
     """compute the gradient of loss."""
+    y = y.reshape((y.shape[0], 1))
     ripMemory = tx.dot(w)
-    sigmo = sigmoid((ripMemory - y))
+    sigmo = sigmoid(ripMemory - y)
     return tx.T.dot(sigmo)
 
 def logistic_regression_test(y, tx, gamma, max_iter):
@@ -165,25 +190,28 @@ def logistic_regression_test(y, tx, gamma, max_iter):
 
     # start the logistic regression
     for iter in range(max_iter):
-        w = learning_by_newton_method(y, tx, w, gamma)
-        print(iter)
+        #w = learning_by_newton_method(y, tx, w, gamma)
+        w = w - gamma * calculate_gradient_logistic(y, tx, w)
         # converge criteria
-        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
-            break
+        #if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
+            #break
+    return w
             
 def calculate_hessian(y, tx, w):
     """return the hessian of the loss function."""
     N = tx.shape[0]
-    S = np.full((N,N), 0)
+    
+    elem = list()
     
     for i in range(0, N):
-        S1 = sigmoid(tx[i].T.dot(w))
-        S2 = 1 - sigmoid(tx[i].T.dot(w))
-        S[i,i] = S1 * S2
+        S1 = sigmoid2(tx[i].T.dot(w))
+        S2 = 1 - sigmoid2(tx[i].T.dot(w))
+        S0 = tx[i].T
+        elem.append(S1 * S2 * S0)
 
-    H1 = tx.T.dot(S)
-    return H1.dot(tx)
-
+    array1 = np.array(elem).reshape((tx.shape[0], tx.shape[1]))
+    return array1
+    
 def logistic_regression_hessian(y, tx, w):
     """return the loss, gradient, and hessian."""
     # ***************************************************
@@ -199,8 +227,9 @@ def learning_by_newton_method(y, tx, w, gamma):
     return the loss and updated w.
     """
     grad, hessian = logistic_regression_hessian(y, tx, w)
-    #TODO use np.solve
-    return w - gamma*(np.linalg.inv(hessian)).dot(grad)
+    test = tx.T.dot(hessian)
+    print(test)
+    return w - gamma*(np.linalg.inv(tx.T.dot(hessian))).dot(tx.T).dot(grad)
 
 
             

@@ -40,7 +40,7 @@ def predict_labels3(weights, data, degree):
     PolyXNP2 = PolyXNP.reshape((PolyXNP.shape[0], PolyXNP.shape[2]))
     
     
-    #These appends take so much time TODO use list and then transform to np.array
+    #These appends take too much time TODO use list and then transform to np.array
     for row in PolyXNP2:
         if row[model_id] == 0.0:
             y_pred = np.append(y_pred, np.dot(row, weights[0]))
@@ -55,9 +55,6 @@ def predict_labels3(weights, data, degree):
     y_pred[np.where(y_pred > 0)] = 1
     
     return y_pred
-
-
-
 
 
 def predict_labels2(weights, data):
