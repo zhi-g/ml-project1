@@ -22,3 +22,9 @@ def compute_loss(y, tx, w):
     e = y - tx.dot(w)
     return calculate_mse(e)
     # return calculate_mae(e)
+
+    
+def compute_cost_ll(y, tx, w):
+    """Computes cost as negative value of the log-likelihood."""
+    tXW = np.dot(tx, w)
+    return np.dot(-y.T, tXW) + np.mean(np.log(1 + np.exp(tXW)))
