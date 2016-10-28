@@ -3,7 +3,7 @@
 import csv
 import numpy as np
 from helpers import *
-from ml_functions import build_poly2, sigmoPred
+from ml_functions import build_poly2, sigmoPred, sigmoid
 
 
 def load_csv_data(data_path, sub_sample=False):
@@ -74,9 +74,21 @@ def predict_labels2(weights, data):
 
 def predict_labels(weights, data):
     """Generates class predictions given weights, and a test data matrix"""
-    y_pred = np.dot(data, weights)
+    y_pred = sigmoid(np.dot(data, weights))
     y_pred[np.where(y_pred <= 0)] = -1
     y_pred[np.where(y_pred > 0)] = 1
+    
+    return y_pred
+
+
+def predict_labels_logistic_single(weights, data):
+    """Generates class predictions given weights, and a test data matrix"""
+    y_pred = sigmoid(np.dot(data, weights))
+    
+    print(y_pred)
+    
+    y_pred[np.where(y_pred <= 0.5)] = -1
+    y_pred[np.where(y_pred > 0.5)] = 1
     
     return y_pred
 

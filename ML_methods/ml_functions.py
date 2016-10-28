@@ -78,13 +78,11 @@ def build_poly(x, degree):
 
 def build_poly2(x, degree):
     """polynomial basis functions for input data x, for j=0 up to j=degree."""
-    size = (x.shape[0] - 1)*(degree) + 1
+    size = (x.shape[0])*(degree)
     #phi = np.full((1, size), 0.0)
     phi = list()
     
-    phi.append(1)
-    
-    for i in range(1, x.shape[0]):
+    for i in range(0, x.shape[0]):
         for j in range(1, degree+1):
             index = j + i*(degree+1)
             #np.put(phi, index, np.power(x[i], j))
@@ -136,22 +134,17 @@ def ridge_regression(y, tx, lamb):
     
     return a
 
-
 def calculate_loss_negative_log_likelihood(y, tx, w):
     """compute the cost by negative log likelihood."""
-    summ = 0
-    for i in range(1,tx.shape[0]):
-        ln = np.log(1 + np.exp(tx[i].T.dot(w)))
-        diff = y[i] * tx[i].T.dot(w)
-        summ = summ + (ln - diff)
-    return summ
-
+    #loss = np.log(1 + np.exp(tx.dot(w))) - y * tx.dot(w)
+    #return np.sum(loss, axis=0)
+    return 0
 
 def sigmoPred(t):
     """apply sigmoid function on t."""
-    if t >= 15:
+    if t >= 50:
         return 1
-    if t <= -15:
+    if t <= -50:
         return 0
     else:
         return 1 / ( 1 + np.exp(t))
@@ -159,24 +152,23 @@ def sigmoPred(t):
     
 def sigmoid(x):
     """Implement sigmoid function for ridge regression."""
-    elem = list()
-    for i in range(0, x.shape[0]):
-        for j in range(0, x.shape[1]):
-            if x[i,j] >= 15:
-                elem.append(1)
-            elif x[i,j] < -15:
-                elem.append(0)
-            else:
-                elem.append(1 / ( 1 + np.exp(x[i,j])))
-    array = np.array(elem).reshape((x.shape[0], x.shape[1]))
-    return array
-
+    for i in x:
+        for j in i:
+            j = sigmoPred(j)
+    return x
 
 def calculate_gradient_logistic(y, tx, w):
     """compute the gradient of loss."""
     y = y.reshape((y.shape[0], 1))
     loss = calculate_loss_negative_log_likelihood(y, tx, w)
-    return loss, tx.T.dot(sigmoid(tx.dot(w) - y))
+    
+    sig = sigmoid(np.dot(tx, w))
+    sigy = sig - y
+    
+    ret = tx.T.dot(sigy)
+    
+    return loss, ret
+    #return loss, tx.T.dot(sigmoid(tx.dot(w) - y))
 
 
 def logistic_regression_test(y, tx, gamma, max_iter):
@@ -188,24 +180,47 @@ def logistic_regression_test(y, tx, gamma, max_iter):
         loss, grad = calculate_gradient_logistic(y, tx, w)
         w = w - gamma * grad
         
+    print(loss)
     return loss, w
     
+    
+def conv_logistic_regression_test(y, tx, gamma):
+    
+    w = np.zeros((tx.shape[1], 1))
+    # start the logistic regression
+    last_loss = np.inf
+    while True:
+        #loss, w = learning_by_newton_method(y, tx, w, gamma)[0]
+        loss, grad = calculate_gradient_logistic(y, tx, w)
+        w = w - gamma * grad
+        if(loss <= 0.0):
+            break
+            
+        last_loss = loss
+            
+    print(loss)
+    return loss, w
     
 def pen_logistic_regression_test(y, tx, lamb, gamma, max_iter):
     # init parameters
     w = np.zeros((tx.shape[1], 1))
     N = tx.shape[0]
 
+    print(tx.shape)
+    print(y.shape)
+    print(w.shape)
+    
     # start the logistic regression
     for iter in range(max_iter):
         loss, grad = calculate_gradient_logistic(y, tx, w)
         
         #We don't want to penalize w0 ?sss
-        m2grad = grad +  2* lamb * w
+        m2grad = grad + 2* lamb * w
         #m2grad[0] = grad[0]
-        
         w = w - gamma * (m2grad)
+       
         
+    print(loss)
     return loss, w
 
 '''

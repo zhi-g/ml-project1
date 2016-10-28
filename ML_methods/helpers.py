@@ -11,8 +11,19 @@ def standardize(x, mean_x=None, std_x=None):
         std_x = np.std(x, axis=0)
     x[:, std_x>0] = x[:, std_x>0] / std_x[std_x>0]
     
-    tx = np.hstack((np.ones((x.shape[0],1)), x))
-    return tx, mean_x, std_x
+    print(x.max())
+    
+    #tx = np.hstack((np.ones((x.shape[0],1)), x))
+    return x#, mean_x, std_x
+
+def standard(x):
+    x = (x - x.min(0)) / x.ptp(0)
+    return x
+
+def standard2(X):
+    
+    X = (X - np.mean(X)) / np.std(X)
+    return X
 
 def standardize_filtered(tx):
     """Standardize the original data set with -999 values set to zero."""
