@@ -12,7 +12,7 @@ def compute_gradient(y, tx, w):
 
 # TODO check if we have to comply with the project description methods which would mean we have to
 # get rid of the initial_w param
-def least_squares_GD(y, tx, initial_w, gamma, max_iters): 
+def least_squares_GD(y, tx, initial_w, max_iters, gamma): 
     """Gradient descent algorithm."""
     # Define parameters to store w and loss
     ws = [initial_w]
@@ -38,12 +38,13 @@ def compute_stoch_gradient(y, tx, w):
 
 # TODO check if we have to comply with the project description methods which would mean we have to
 # get rid of the initial_w and batch_size param
-def least_squares_SGD(y, tx, initial_w, batch_size, max_epochs, gamma):
+def least_squares_SGD(y, tx, initial_w, max_iter, gamma):
     """Stochastic gradient descent algorithm."""
+    batch_size = 10
     ws = [initial_w]
     losses = []
     w = initial_w
-    for n_iter in range(max_iters):
+    for n_iter in range(max_iter):
         
         for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size):
             gradient = compute_stoch_gradient(minibatch_y, minibatch_tx, w)
@@ -112,7 +113,7 @@ def split_data(x, y, ratio, seed=1):
 
     return train_data, test_data
 
-def ridge_regression(y, tx, lamb):
+def ridge_regression(y, tx, lambda_):
     """implement ridge regression."""
     # Here we assume tx polynomial usually
     
@@ -127,7 +128,7 @@ def ridge_regression(y, tx, lamb):
     id_mat[0][0] = 0
     
     x_inv = np.dot(tx.T, tx)
-    id_mult = (lamb * (2 * N )) * id_mat #if I copy formula from slides
+    id_mult = (lambda_ * (2 * N )) * id_mat #if I copy formula from slides
     
     #Solve again to compute matrix inverses
     a = np.linalg.solve(x_inv + id_mult, np.dot(tx.T, y))
@@ -136,9 +137,9 @@ def ridge_regression(y, tx, lamb):
 
 def calculate_loss_negative_log_likelihood(y, tx, w):
     """compute the cost by negative log likelihood."""
-    #loss = np.log(1 + np.exp(tx.dot(w))) - y * tx.dot(w)
-    #return np.sum(loss, axis=0)
-    return 0
+    loss = np.log(1 + np.exp(tx.dot(w))) - y * tx.dot(w)
+    return np.sum(loss, axis=0)
+    #return 0
 
 def sigmoPred(t):
     """apply sigmoid function on t."""
@@ -147,7 +148,7 @@ def sigmoPred(t):
     if t <= -50:
         return 0
     else:
-        return 1 / ( 1 + np.exp(t))
+        return 1 / ( 1 + np.exp(-t))
 
     
 def sigmoid(x):
@@ -156,6 +157,7 @@ def sigmoid(x):
         for j in i:
             j = sigmoPred(j)
     return x
+
 
 def calculate_gradient_logistic(y, tx, w):
     """compute the gradient of loss."""
@@ -171,44 +173,31 @@ def calculate_gradient_logistic(y, tx, w):
     #return loss, tx.T.dot(sigmoid(tx.dot(w) - y))
 
 
-def logistic_regression_test(y, tx, gamma, max_iter):
+def logistic_regression(y, tx, initial_w, max_iter, gamma ):
 
-    w = np.zeros((tx.shape[1], 1))
+    threshold = 1e-8
+    losses = []
+    w = initial_w 
+    
     # start the logistic regression
     for iter in range(max_iter):
         #loss, w = learning_by_newton_method(y, tx, w, gamma)[0]
         loss, grad = calculate_gradient_logistic(y, tx, w)
         w = w - gamma * grad
         
-    print(loss)
-    return loss, w
-    
-    
-def conv_logistic_regression_test(y, tx, gamma):
-    
-    w = np.zeros((tx.shape[1], 1))
-    # start the logistic regression
-    last_loss = np.inf
-    while True:
-        #loss, w = learning_by_newton_method(y, tx, w, gamma)[0]
-        loss, grad = calculate_gradient_logistic(y, tx, w)
-        w = w - gamma * grad
-        if(loss <= 0.0):
+        losses.append(loss)
+        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
             break
-            
-        last_loss = loss
-            
-    print(loss)
-    return loss, w
+        
+    return losses, w
     
-def pen_logistic_regression_test(y, tx, lamb, gamma, max_iter):
+    
+def reg_logistic_regression_test(y, tx, lamb, initial_w, max_iter, gamma):
     # init parameters
-    w = np.zeros((tx.shape[1], 1))
+    w =  initial_w 
+    threshold = 1e-8
     N = tx.shape[0]
-
-    print(tx.shape)
-    print(y.shape)
-    print(w.shape)
+    losses = []
     
     # start the logistic regression
     for iter in range(max_iter):
@@ -218,10 +207,12 @@ def pen_logistic_regression_test(y, tx, lamb, gamma, max_iter):
         m2grad = grad + 2* lamb * w
         #m2grad[0] = grad[0]
         w = w - gamma * (m2grad)
-       
         
-    print(loss)
-    return loss, w
+        losses.append(loss)
+        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
+            break
+       
+    return losses, w
 
 '''
 def sigmoid2(x):

@@ -84,7 +84,6 @@ def predict_labels(weights, data):
 def predict_labels_logistic_single(weights, data):
     """Generates class predictions given weights, and a test data matrix"""
     y_pred = sigmoid(np.dot(data, weights))
-    
     print(y_pred)
     
     y_pred[np.where(y_pred <= 0.5)] = -1
