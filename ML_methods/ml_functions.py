@@ -113,7 +113,7 @@ def split_data(x, y, ratio, seed=1):
 
     return train_data, test_data
 
-def ridge_regression(y, tx, lambda_):
+def ridge_regression(y, tx, lambda_): # edited this function to return both loss and weights
     """implement ridge regression."""
     # Here we assume tx polynomial usually
     
@@ -133,7 +133,7 @@ def ridge_regression(y, tx, lambda_):
     #Solve again to compute matrix inverses
     a = np.linalg.solve(x_inv + id_mult, np.dot(tx.T, y))
     
-    return a
+    return compute_loss(y, tx, a), a 
 
 def calculate_loss_negative_log_likelihood(y, tx, w):
     """compute the cost by negative log likelihood."""

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """some helper functions."""
 import numpy as np
+from ml_functions import *
 
 def standardize(x, mean_x=None, std_x=None):
     """Standardize the original data set."""
@@ -69,6 +70,28 @@ def batch_iter(y, tx, batch_size, num_batches=None, shuffle=True):
         if start_index != end_index:
             yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
 
+#return both sets as two different variable: train_data, test_data
+def split_data(x, y, ratio, seed=1):
+    """split the dataset based on the split ratio."""
+    # set seed
+    np.random.seed(seed)
+
+    data = np.c_[y, x]
+    
+    np.random.shuffle(data)
+    
+    total_rows = x.shape[0]
+    train_rows = int(np.floor(total_rows * ratio))
+    test_rows = total_rows - train_rows
+    
+    #This should be the case, check that I didn't make a mistake above
+    assert(total_rows == train_rows + test_rows)
+
+    train_data = data[:train_rows]
+    test_data = data[train_rows:(train_rows + test_rows)]
+
+    return train_data, test_data
+            
             
 def build_k_indices(y, k_fold, seed):
     """build k indices for k-fold."""
@@ -108,3 +131,42 @@ def k_fold(y, tx, k, classification_func, err_func):
         rmse_te.append(te_loss)
 
     return np.mean(rmse_tr), np.mean(rmse_te)
+
+
+def cross_validation_rr(y, x, k_indices, k, lambda_, degree):
+    """return the loss of ridge regression."""
+    
+    # empty array for computing the mean for each hold
+    loss_tr_arr = [] 
+    loss_te_arr = [] 
+    
+    for k in range(0,k):
+        # get k'th subgroup in test, others in train
+        x_test = x[k_indices[k]]
+        y_test = y[k_indices[k]]
+        x_train = np.delete(x, k_indices[k], axis=0)
+        y_train = np.delete(y, k_indices[k])
+
+        # form data with polynomial degree
+        tx_train = build_poly(x_train,degree)
+        tx_test = build_poly(x_test,degree)
+
+        # ridge regression
+        loss_tr, weights = ridge_regression(y_train, tx_train, lambda_)
+        loss_te = compute_loss(y_test,tx_test,weights)
+        loss_tr_arr.append(loss_tr)
+        loss_te_arr.append(loss_te)
+        
+    # calculate the loss for train and test data
+    loss_tr = np.mean(loss_tr_arr)
+    loss_te = np.mean(loss_te_arr)
+    
+    return loss_tr, loss_te
+
+
+def load_data(): # for visualization in cross_validation_demo() 
+    """load data."""
+    data = np.loadtxt("dataEx3.csv", delimiter=",", skiprows=1, unpack=True)
+    x = data[0]
+    y = data[1]
+    return x, y
