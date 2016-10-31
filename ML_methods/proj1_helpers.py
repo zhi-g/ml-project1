@@ -25,8 +25,30 @@ def load_csv_data(data_path, sub_sample=False):
 
     return yb, input_data, ids
 
+def predict_labels_ridge_4(weights, data, model_index):
+    """Generates class predictions given weights, and a test data matrix"""
+  
+    y_pred = list()
+    
+    for i in range(0, model_index.shape[0]):
+        if model_index[i] == 0.0:
+            y_pred.append(data[i].dot(weights[0]))
+        if model_index[i] == 1.0:
+            y_pred.append(data[i].dot(weights[1]))
+        if model_index[i] == 2.0:
+            y_pred.append(data[i].dot(weights[2]))
+        if model_index[i] == 3.0:
+            y_pred.append(data[i].dot(weights[3]))
+    
+    y_final = np.array(y_pred)
+                              
+    y_final[np.where(y_final <= 0)] = -1
+    y_final[np.where(y_final > 0)] = 1
+    
+    return y_final
 
-def predict_labels3(weights, data, degree, model_index):
+
+def predict_labels_logistic_4_model(weights, data, degree, model_index):
     """Generates class predictions given weights, and a test data matrix"""
   
     y_pred = np.array([])
@@ -47,27 +69,6 @@ def predict_labels3(weights, data, degree, model_index):
     
     y_pred[np.where(y_pred <= 0.5)] = -1
     y_pred[np.where(y_pred > 0.5)] = 1
-    
-    return y_pred
-
-
-def predict_labels2(weights, data):
-    """Generates class predictions given weights, and a test data matrix"""
-    
-    y_pred = np.array([])
-    
-    for row in data:
-        if row[22] == 0.0:
-            y_pred = np.append(y_pred, np.dot(row, weights[0]))
-        if row[22] == 1.0:
-            y_pred = np.append(y_pred, np.dot(row, weights[1]))
-        if row[22] == 2.0:
-            y_pred = np.append(y_pred, np.dot(row, weights[2]))
-        if row[22] == 3.0:
-            y_pred = np.append(y_pred, np.dot(row, weights[3]))
-       
-    y_pred[np.where(y_pred <= 0)] = -1
-    y_pred[np.where(y_pred > 0)] = 1
     
     return y_pred
 

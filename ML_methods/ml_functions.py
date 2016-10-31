@@ -4,6 +4,15 @@
 import numpy as np
 from costs import compute_loss, compute_cost_ll
 
+# standardize such that the mean is 0 and standard deviation is 1.
+# X is a multi-dimensional array
+# in our case it is only adding constant column for our run.py submission
+def standardize2(X): 
+    #X = (X - np.mean(X)) / np.std(X)
+    X = np.hstack((np.ones((X.shape[0],1)), X)) # adding column of ones for the first column
+    return X
+
+
 def compute_gradient(y, tx, w):
     """Compute the gradient."""
     e = y - (np.dot(tx,w))
@@ -67,29 +76,41 @@ def least_squares(y, tx):
     # we use solve becaue linalg.inv gives numerical error with big numbers
     return np.linalg.solve(a,b)
 
-def build_poly(x, degree):
-    """polynomial basis functions for input data x, for j=0 up to j=degree."""
-    phi = np.array([])
-    for i in range(0, x.shape[0]):
-        for j in range(0, degree+1):
-            phi = np.append(phi, np.array([x[i] ** j]))
+# builds the tX specific polynomial degree
+def build_poly_d(tX_all_degree, degree):
+    index = list()
+    index.append(0)
+    for i in range(0,29): # tX.shape[1] is 29, 
+        for d in range(1,degree+1): # up to degree 10 for example
+            index.append(i*10+d) # [1,11,...,281]
+    return tX_all_degree[:,index]
 
-    phi = phi.reshape([x.shape[0], degree+1])
-    return phi
-
-def build_poly2(x, degree):
+# x is one column
+def build_poly_one_column(x, degree):
     """polynomial basis functions for input data x, for j=0 up to j=degree."""
     size = (x.shape[0])*(degree)
-    #phi = np.full((1, size), 0.0)
     phi = list()
     
     for i in range(0, x.shape[0]):
         for j in range(1, degree+1):
             index = j + i*(degree+1)
-            #np.put(phi, index, np.power(x[i], j))
             phi.append(np.power(x[i], j))
             
     return np.array(phi).reshape((1, size))
+
+# tX is a multidimensional array
+def build_poly3(tX, degree):
+    polyX = list()
+    for row in tX:
+        polyX.append(build_poly_one_column(row, degree))
+
+    PolyXNP = np.array(polyX)
+    PolyXNP2 = PolyXNP.reshape((PolyXNP.shape[0], PolyXNP.shape[2]))
+
+    return PolyXNP2
+    #Standardize
+    PolyXNP2 = standardize(PolyXNP2)
+
 
 #return both sets as two different variable: train_data, test_data
 def split_data(x, y, ratio, seed=1):
